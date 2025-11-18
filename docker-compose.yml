@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  # ---------------- Backend ----------------
+  backend:
+    build: ./backend
+    container_name: ecommerce-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/ecommerce
+    depends_on:
+      - mongodb
+
+  # ---------------- Frontend ----------------
+  frontend:
+    build: ./frontend
+    container_name: ecommerce-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  # ---------------- MongoDB ----------------
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+# ---------- Persistent Volume ----------
+volumes:
+  mongo-data:

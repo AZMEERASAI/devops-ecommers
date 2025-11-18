@@ -23,15 +23,17 @@ spec:
               value: "mongodb://mongodb:27017/ecommerce"
             - name: JWT_SECRET
               value: "yourSuperSecretKey"
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend-service
 spec:
+  type: NodePort
   selector:
     app: backend
   ports:
-    - port: 5000
-      targetPort: 5000
-  type: ClusterIP
+    - port: 5000          # service port (inside cluster)
+      targetPort: 5000    # pod port
+      nodePort: 31034     # port exposed on your machine

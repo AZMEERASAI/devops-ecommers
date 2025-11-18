@@ -35,7 +35,7 @@ pipeline {
             steps {
                 dir('backend') {
                     bat """
-                        docker build -t ${BACKEND_IMAGE} .
+                        docker build --no-cache -t ${BACKEND_IMAGE} .
                         docker push ${BACKEND_IMAGE}
                     """
                 }
@@ -46,7 +46,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     bat """
-                        docker build -t ${FRONTEND_IMAGE} .
+                        docker build --no-cache -t ${FRONTEND_IMAGE} .
                         docker push ${FRONTEND_IMAGE}
                     """
                 }
@@ -68,6 +68,7 @@ pipeline {
                 withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
                     bat """
                         kubectl --kubeconfig=%KCFG% apply -f k8s\\backend-deployment.yaml
+                        kubectl --kubeconfig=%KCFG% rollout restart deployment/backend
                     """
                 }
             }
@@ -78,6 +79,7 @@ pipeline {
                 withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
                     bat """
                         kubectl --kubeconfig=%KCFG% apply -f k8s\\frontend-deployment.yaml
+                        kubectl --kubeconfig=%KCFG% rollout restart deployment/frontend
                     """
                 }
             }

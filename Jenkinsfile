@@ -4,7 +4,7 @@ pipeline {
     environment {
         BACKEND_IMAGE = "azmeerasai/backend:latest"
         FRONTEND_IMAGE = "azmeerasai/frontend:latest"
-        DOCKER_CREDENTIALS_ID = "dockerhub-creds"   // FIXED credentials ID
+        DOCKER_CREDENTIALS_ID = "docker-hub-creds"   // FIXED credentials ID
     }
 
     stages {
@@ -76,3 +76,4 @@ pipeline {
         }
     }
 }
+

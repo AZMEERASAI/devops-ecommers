@@ -4,7 +4,7 @@ pipeline {
     environment {
         BACKEND_IMAGE = "azmeerasai/backend:latest"
         FRONTEND_IMAGE = "azmeerasai/frontend:latest"
-        DOCKER_CREDENTIALS_ID = "docker-hub-creds"  // Your Jenkins Docker Hub credentials ID
+        DOCKER_CREDENTIALS_ID = "dockerhubs-creds"  // Your Jenkins Docker Hub credentials ID
     }
 
     stages {
@@ -66,3 +66,4 @@ pipeline {
         }
     }
 }
+

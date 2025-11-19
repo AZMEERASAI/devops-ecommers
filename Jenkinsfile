@@ -25,13 +25,14 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     bat """
+                        echo Logging in...
                         echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
                     """
                 }
             }
         }
 
-        stage('Build Backend Image') {
+        stage('Build Backend Docker Image') {
             steps {
                 dir('backend') {
                     bat """
@@ -42,7 +43,7 @@ pipeline {
             }
         }
 
-        stage('Build Frontend Image') {
+        stage('Build Frontend Docker Image') {
             steps {
                 dir('frontend') {
                     bat """
@@ -62,23 +63,20 @@ pipeline {
             }
         }
 
-        stage('Deploy Backend') {
+        stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
                     bat """
-                        kubectl --kubeconfig=%KCFG% apply -f k8s\\backend-deployment.yaml
-                        kubectl --kubeconfig=%KCFG% rollout restart deployment/backend
-                    """
-                }
-            }
-        }
+                        echo "⚙ Deploying MongoDB..."
+                        kubectl --kubeconfig=%KCFG% apply -f k8s\\mongo-deployment.yaml
 
-        stage('Deploy Frontend') {
-            steps {
-                withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
-                    bat """
+                        echo "🚀 Deploying Backend..."
+                        kubectl --kubeconfig=%KCFG% apply -f k8s\\backend-deployment.yaml
+                        kubectl --kubeconfig=%KCFG% rollout restart deployment backend
+
+                        echo "🚀 Deploying Frontend..."
                         kubectl --kubeconfig=%KCFG% apply -f k8s\\frontend-deployment.yaml
-                        kubectl --kubeconfig=%KCFG% rollout restart deployment/frontend
+                        kubectl --kubeconfig=%KCFG% rollout restart deployment frontend
                     """
                 }
             }

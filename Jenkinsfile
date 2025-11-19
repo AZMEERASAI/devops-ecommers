@@ -11,12 +11,44 @@ pipeline {
 
     stages {
 
+        /* --------------------- CHECKOUT ----------------------- */
         stage('Checkout Code') {
             steps {
                 checkout scm
             }
         }
 
+        /* --------------------- INSTALL & BUILD BACKEND ----------------------- */
+        stage('Build Backend App') {
+            steps {
+                dir('backend') {
+                    bat """
+                        echo Installing backend dependencies...
+                        npm install
+
+                        echo Building backend...
+                        npm run build
+                    """
+                }
+            }
+        }
+
+        /* --------------------- INSTALL & BUILD FRONTEND ----------------------- */
+        stage('Build Frontend App') {
+            steps {
+                dir('frontend') {
+                    bat """
+                        echo Installing frontend dependencies...
+                        npm install
+
+                        echo Building frontend...
+                        npm run build
+                    """
+                }
+            }
+        }
+
+        /* --------------------- LOGIN DOCKER HUB ----------------------- */
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(
@@ -25,17 +57,19 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     bat """
-                        echo Logging in...
+                        echo Logging into Docker Hub...
                         echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
                     """
                 }
             }
         }
 
+        /* --------------------- BUILD BACKEND DOCKER IMAGE ----------------------- */
         stage('Build Backend Docker Image') {
             steps {
                 dir('backend') {
                     bat """
+                        echo Building backend Docker image...
                         docker build --no-cache -t ${BACKEND_IMAGE} .
                         docker push ${BACKEND_IMAGE}
                     """
@@ -43,10 +77,12 @@ pipeline {
             }
         }
 
+        /* --------------------- BUILD FRONTEND DOCKER IMAGE ----------------------- */
         stage('Build Frontend Docker Image') {
             steps {
                 dir('frontend') {
                     bat """
+                        echo Building frontend Docker image...
                         docker build --no-cache -t ${FRONTEND_IMAGE} .
                         docker push ${FRONTEND_IMAGE}
                     """
@@ -54,6 +90,7 @@ pipeline {
             }
         }
 
+        /* --------------------- UPDATE YAML FILES ----------------------- */
         stage('Update Kubernetes Manifests') {
             steps {
                 bat """
@@ -63,18 +100,18 @@ pipeline {
             }
         }
 
+        /* --------------------- APPLY TO KUBERNETES ----------------------- */
         stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
                     bat """
-                        echo "⚙ Deploying MongoDB..."
+                        echo Deploying to Kubernetes...
+
                         kubectl --kubeconfig=%KCFG% apply -f k8s\\mongo-deployment.yaml
 
-                        echo "🚀 Deploying Backend..."
                         kubectl --kubeconfig=%KCFG% apply -f k8s\\backend-deployment.yaml
                         kubectl --kubeconfig=%KCFG% rollout restart deployment backend
 
-                        echo "🚀 Deploying Frontend..."
                         kubectl --kubeconfig=%KCFG% apply -f k8s\\frontend-deployment.yaml
                         kubectl --kubeconfig=%KCFG% rollout restart deployment frontend
                     """
@@ -82,6 +119,7 @@ pipeline {
             }
         }
 
+        /* --------------------- VERIFY DEPLOYMENT ----------------------- */
         stage('Verify Deployment') {
             steps {
                 withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {

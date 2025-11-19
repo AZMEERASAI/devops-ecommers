@@ -32,13 +32,13 @@ function Login() {
         <nav>
           <ul className="header__nav">
             <li className="header__nav-item">
-              <a href="/" className="header__nav-link">Home</a>
+              <a href="/" className="header__nav-link">Homes</a>
             </li>
             <li className="header__nav-item">
-              <a href="#about" className="header__nav-link">About</a>
+              <a href="#about" className="header__nav-link">Abouts</a>
             </li>
             <li className="header__nav-item">
-              <a href="#contact" className="header__nav-link">Contact</a>
+              <a href="#contact" className="header__nav-link">Contacts</a>
             </li>
           </ul>
         </nav>
@@ -111,3 +111,4 @@ function Login() {
 }
 
 export default Login;
+

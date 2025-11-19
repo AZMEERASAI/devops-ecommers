@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        BACKEND_IMAGE = "azmeerasai/backend:latest"
-        FRONTEND_IMAGE = "azmeerasai/frontend:latest"
-        DOCKER_CREDENTIALS_ID = "docker-hub-creds"     // Docker Hub credentials ID
-        KUBECONFIG_CRED = "kubeconfig"                 // Kubernetes kubeconfig credentials ID
+        IMAGE_VERSION = "${BUILD_NUMBER}"
+        BACKEND_IMAGE = "azmeerasai/backend:${BUILD_NUMBER}"
+        FRONTEND_IMAGE = "azmeerasai/frontend:${BUILD_NUMBER}"
+        DOCKER_CREDENTIALS_ID = "docker-hub-creds"
+        KUBECONFIG_CRED = "kubeconfig"
     }
 
     stages {
@@ -48,6 +49,18 @@ pipeline {
                     bat """
                         docker build --no-cache -t ${FRONTEND_IMAGE} .
                         docker push ${FRONTEND_IMAGE}
+                    """
+                }
+            }
+        }
+
+        stage('Update Kubernetes Manifests') {
+            steps {
+                script {
+                    // Replace image tags in deployment YAMLs
+                    bat """
+                        powershell -Command "(Get-Content k8s/backend-deployment.yaml) -replace 'image: azmeerasai/backend:.*', 'image: azmeerasai/backend:${IMAGE_VERSION}' | Set-Content k8s/backend-deployment.yaml"
+                        powershell -Command "(Get-Content k8s/frontend-deployment.yaml) -replace 'image: azmeerasai/frontend:.*', 'image: azmeerasai/frontend:${IMAGE_VERSION}' | Set-Content k8s/frontend-deployment.yaml"
                     """
                 }
             }

@@ -1,5 +1,4 @@
-
-// export default AdminDashboard;
+// src/pages/AdminDashboard.js
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
@@ -36,9 +35,8 @@ const AdminDashboard = () => {
       await API.post('/items', data);
     }
 
-      fetchItems();
+    fetchItems();
     setForm({ name: '', description: '', price: '', image: null });
-  
   };
 
   const handleEdit = (item) => {
@@ -52,22 +50,15 @@ const AdminDashboard = () => {
     setEditItemId(item._id);
   };
 
-  // const deleteItem = async (id) => {
-  //   console.log("correct");
-  //   await API.delete(`/items/${id}`);
-  //   fetchItems();
-  // };
- const deleteItem = async (id) => {
-  try {
-    await API.delete(`/items/${id}`);
-    fetchItems();
-  } catch (err) {
-    console.error('Delete failed:', err.response?.data || err.message);
-    alert(err.response?.data?.error || 'Delete failed');
-  }
-};
-
-
+  const deleteItem = async (id) => {
+    try {
+      await API.delete(`/items/${id}`);
+      fetchItems();
+    } catch (err) {
+      console.error('Delete failed:', err.response?.data || err.message);
+      alert(err.response?.data?.error || 'Delete failed');
+    }
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -79,187 +70,130 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="page">
       {/* Navbar */}
-      <header style={styles.header}>
-        <h2 style={styles.logo}>Ecommerce Admin</h2>
-        <nav style={styles.nav}>
-          <button onClick={() => navigate('/')} style={styles.navLink}>Home</button>
-          <button onClick={() => scrollToSection(aboutRef)} style={styles.navLink}>About</button>
-          <button onClick={() => scrollToSection(contactRef)} style={styles.navLink}>Contact</button>
-          <button onClick={handleLogout} style={styles.logoutBtn}>Logout</button>
+      <header className="header">
+        <h2 className="header__logo">Ecommerce Admin</h2>
+        <nav>
+          <ul className="header__nav">
+            <li className="header__nav-item">
+              <button onClick={() => navigate('/')} className="header__nav-button">Home</button>
+            </li>
+            <li className="header__nav-item">
+              <button onClick={() => scrollToSection(aboutRef)} className="header__nav-button">About</button>
+            </li>
+            <li className="header__nav-item">
+              <button onClick={() => scrollToSection(contactRef)} className="header__nav-button">Contact</button>
+            </li>
+            <li className="header__nav-item">
+              <button onClick={handleLogout} className="header__nav-button header__nav-button--logout">Logout</button>
+            </li>
+          </ul>
         </nav>
       </header>
 
       {/* Form */}
-      <section style={styles.formSection}>
-        <h3 style={styles.sectionTitle}>{isEditing ? 'Update Item' : 'Add New Item'}</h3>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required style={styles.input} />
-          <input placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} required style={styles.input} />
-          <input placeholder="Price" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required style={styles.input} />
-          <input type="file" onChange={e => setForm({ ...form, image: e.target.files[0] })} style={styles.input} />
-          <button type="submit" style={styles.button}>{isEditing ? 'Update Item' : 'Add Item'}</button>
+      <section className="admin-form-section">
+        <h3 className="admin-form-section__title">{isEditing ? 'Update Item' : 'Add New Item'}</h3>
+        <form onSubmit={handleSubmit} className="form">
+          <div className="form__group">
+            <input 
+              placeholder="Name" 
+              value={form.name} 
+              onChange={e => setForm({ ...form, name: e.target.value })} 
+              required 
+              className="form__input" 
+            />
+          </div>
+          <div className="form__group">
+            <input 
+              placeholder="Description" 
+              value={form.description} 
+              onChange={e => setForm({ ...form, description: e.target.value })} 
+              required 
+              className="form__input" 
+            />
+          </div>
+          <div className="form__group">
+            <input 
+              placeholder="Price" 
+              type="number" 
+              value={form.price} 
+              onChange={e => setForm({ ...form, price: e.target.value })} 
+              required 
+              className="form__input" 
+            />
+          </div>
+          <div className="form__group">
+            <input 
+              type="file" 
+              onChange={e => setForm({ ...form, image: e.target.files[0] })} 
+              className="form__input form__file-input" 
+            />
+          </div>
+          <button type="submit" className="button button--primary">
+            {isEditing ? 'Update Item' : 'Add Item'}
+          </button>
         </form>
       </section>
 
       {/* Items List */}
-      <section style={styles.cardSection}>
+      <section className="admin-cards-section">
         {items.map(item => (
-          <div key={item._id} style={styles.card}>
-            <img src={`http://localhost:5000${item.image}`} alt={item.name} style={styles.cardImage} />
-            <small style={{ fontSize: '12px', color: 'gray' }}>{`http://localhost:5000${item.image}`}</small>
-            <h3>{item.name}</h3>
-            <p>{item.description}</p>
-            <p><strong>₹{item.price}</strong></p>
-            <div>
-              <button onClick={() => handleEdit(item)} style={styles.cardBtn}>Edit</button>
-              <button onClick={() => deleteItem(item._id)} style={{ ...styles.cardBtn, backgroundColor: '#e74c3c' }}>Delete</button>
+          <div key={item._id} className="card card--product">
+            <img 
+              src={`http://localhost:5000${item.image}`} 
+              alt={item.name} 
+              className="card__image" 
+            />
+            <div className="card__body">
+            <small className="card__meta">
+              {`http://localhost:5000${item.image}`}
+            </small>
+              <h3 className="card__title">{item.name}</h3>
+              <p className="card__description">{item.description}</p>
+              <p className="card__price"><strong>₹{item.price}</strong></p>
+              <div className="card__actions">
+                <button 
+                  onClick={() => handleEdit(item)} 
+                  className="button button--secondary button--small"
+                >
+                  Edit
+                </button>
+                <button 
+                  onClick={() => deleteItem(item._id)} 
+                  className="button button--danger button--small"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </section>
 
       {/* About Section */}
-      <section ref={aboutRef} style={styles.infoSection}>
-        <h3>About</h3>
-        <p>Welcome to ShopEase Admin – Manage your products efficiently and seamlessly from this dashboard.</p>
-      </section>
-
-      {/* Contact Section */}
-      <section ref={contactRef} style={styles.infoSection}>
-        <h3>Contact</h3>
-        <p>📧 Email: <a href="mailto:azmeerasai123456789@gmail.com">azmeerasai123456789@gmail.com</a><br />
-           📞 Phone: <a href="tel:9010854701">9010854701</a>
+      <section ref={aboutRef} className="section">
+        <h3 className="section__title">About</h3>
+        <p className="section__text">
+          Welcome to ShopEase Admin – Manage your products efficiently and seamlessly from this dashboard.
         </p>
       </section>
 
-      <footer style={styles.footer}>
+      {/* Contact Section */}
+      <section ref={contactRef} className="section section--alt">
+        <h3 className="section__title">Contact</h3>
+        <p className="section__text">
+          📧 Email: <a href="mailto:azmeerasai123456789@gmail.com" className="section__link">azmeerasai123456789@gmail.com</a><br />
+          📞 Phone: <a href="tel:9010854701" className="section__link">9010854701</a>
+        </p>
+      </section>
+
+      <footer className="footer">
         &copy; {new Date().getFullYear()} ShopEase Admin. All rights reserved.
       </footer>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    backgroundColor: '#f4f6f8',
-    color: '#333',
-    minHeight: '100vh',
-  },
-  header: {
-    backgroundColor: '#2c3e50',
-    color: '#fff',
-    padding: '20px 40px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    position: 'sticky',
-    top: 0,
-    zIndex: 999,
-  },
-  logo: {
-    margin: 0,
-    fontSize: '24px',
-  },
-  nav: {
-    display: 'flex',
-    gap: '25px',
-    alignItems: 'center',
-  },
-  navLink: {
-    background: 'none',
-    border: 'none',
-    color: '#ecf0f1',
-    fontSize: '16px',
-    cursor: 'pointer',
-  },
-  logoutBtn: {
-    backgroundColor: '#e74c3c',
-    color: '#fff',
-    border: 'none',
-    padding: '8px 14px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '14px',
-  },
-  formSection: {
-    padding: '40px',
-    backgroundColor: '#fff',
-    margin: '20px auto',
-    maxWidth: '600px',
-    borderRadius: '10px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-  },
-  sectionTitle: {
-    marginBottom: '20px',
-    textAlign: 'center',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px',
-  },
-  input: {
-    padding: '12px',
-    fontSize: '16px',
-    borderRadius: '6px',
-    border: '1px solid #ccc',
-  },
-  button: {
-    backgroundColor: '#2980b9',
-    color: '#fff',
-    padding: '12px',
-    fontSize: '16px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-  },
-  cardSection: {
-    padding: '30px 40px',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '20px',
-    justifyContent: 'center',
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: '10px',
-    padding: '20px',
-    width: '250px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    textAlign: 'center',
-  },
-  cardImage: {
-    width: '100%',
-    height: '150px',
-    objectFit: 'cover',
-    borderRadius: '8px',
-    marginBottom: '10px',
-  },
-  cardBtn: {
-    backgroundColor: '#27ae60',
-    color: '#fff',
-    border: 'none',
-    padding: '8px 12px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    margin: '5px',
-  },
-  infoSection: {
-    backgroundColor: '#fff',
-    padding: '60px 40px',
-    textAlign: 'center',
-    borderTop: '1px solid #e0e0e0',
-  },
-  footer: {
-    textAlign: 'center',
-    padding: '20px',
-    backgroundColor: '#2c3e50',
-    color: '#fff',
-    fontSize: '14px',
-  },
 };
 
 export default AdminDashboard;

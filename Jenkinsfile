@@ -4,10 +4,12 @@ pipeline {
     environment {
         BACKEND_IMAGE = "azmeerasai/backend:latest"
         FRONTEND_IMAGE = "azmeerasai/frontend:latest"
-        DOCKER_CREDENTIALS_ID = "dockerhubs-creds"  // Your Jenkins Docker Hub credentials ID
+        DOCKER_CREDENTIALS_ID = "docker-hub-creds"     // Docker Hub credentials ID
+        KUBECONFIG_CRED = "kubeconfig"                 // Kubernetes kubeconfig credentials ID
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -16,8 +18,15 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "$DOCKER_CREDENTIALS_ID", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+                withCredentials([usernamePassword(
+                    credentialsId: "${DOCKER_CREDENTIALS_ID}",
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat """
+                        echo Logging in to Docker Hub...
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                    """
                 }
             }
         }
@@ -25,8 +34,10 @@ pipeline {
         stage('Build Backend Docker Image') {
             steps {
                 dir('backend') {
-                    bat 'docker build -t %BACKEND_IMAGE% .'
-                    bat 'docker push %BACKEND_IMAGE%'
+                    bat """
+                        docker build --no-cache -t ${BACKEND_IMAGE} .
+                        docker push ${BACKEND_IMAGE}
+                    """
                 }
             }
         }
@@ -34,36 +45,55 @@ pipeline {
         stage('Build Frontend Docker Image') {
             steps {
                 dir('frontend') {
-                    bat 'docker build -t %FRONTEND_IMAGE% .'
-                    bat 'docker push %FRONTEND_IMAGE%'
+                    bat """
+                        docker build --no-cache -t ${FRONTEND_IMAGE} .
+                        docker push ${FRONTEND_IMAGE}
+                    """
                 }
             }
         }
 
         stage('Deploy MongoDB') {
             steps {
-                bat 'kubectl apply -f k8s\\mongo-deployment.yaml'
+                withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
+                    bat """
+                        kubectl --kubeconfig=%KCFG% apply -f k8s\\mongo-deployment.yaml
+                    """
+                }
             }
         }
 
         stage('Deploy Backend') {
             steps {
-                bat 'kubectl apply -f k8s\\backend-deployment.yaml'
+                withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
+                    bat """
+                        kubectl --kubeconfig=%KCFG% apply -f k8s\\backend-deployment.yaml
+                        kubectl --kubeconfig=%KCFG% rollout restart deployment/backend
+                    """
+                }
             }
         }
 
         stage('Deploy Frontend') {
             steps {
-                bat 'kubectl apply -f k8s\\frontend-deployment.yaml'
+                withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
+                    bat """
+                        kubectl --kubeconfig=%KCFG% apply -f k8s\\frontend-deployment.yaml
+                        kubectl --kubeconfig=%KCFG% rollout restart deployment/frontend
+                    """
+                }
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                bat 'kubectl get pods'
-                bat 'kubectl get svc'
+                withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KCFG')]) {
+                    bat """
+                        kubectl --kubeconfig=%KCFG% get pods
+                        kubectl --kubeconfig=%KCFG% get svc
+                    """
+                }
             }
         }
     }
 }
-

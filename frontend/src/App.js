@@ -6,7 +6,7 @@ import Landing from './pages/Landing';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Cart from './pages/Cart';
-// src/App.js or src/index.js
+import './components.css';
 import './App.css';
 
 

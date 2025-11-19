@@ -14,11 +14,10 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: azmeerasai/frontend:latest
+          image: azmeerasai/frontend:latest   # Jenkins will replace this on each build
           imagePullPolicy: Always
           ports:
             - containerPort: 80
-
 ---
 apiVersion: v1
 kind: Service
@@ -32,4 +31,3 @@ spec:
     - port: 3000
       targetPort: 80
       nodePort: 31033
-

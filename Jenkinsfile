@@ -5,6 +5,10 @@ pipeline {
         IMAGE_VERSION = "${BUILD_NUMBER}"
         BACKEND_IMAGE = "azmeerasai/backend:${BUILD_NUMBER}"
         FRONTEND_IMAGE = "azmeerasai/frontend:${BUILD_NUMBER}"
+
+        BACKEND_LATEST = "azmeerasai/backend:latest"
+        FRONTEND_LATEST = "azmeerasai/frontend:latest"
+
         DOCKER_CREDENTIALS_ID = "docker-hub-creds"
         KUBECONFIG_CRED = "kubeconfig"
     }
@@ -25,30 +29,33 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     bat """
-                        echo Logging in to Docker Hub...
                         echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
                     """
                 }
             }
         }
 
-        stage('Build Backend Docker Image') {
+        stage('Build Backend Image') {
             steps {
                 dir('backend') {
                     bat """
                         docker build --no-cache -t ${BACKEND_IMAGE} .
+                        docker tag ${BACKEND_IMAGE} ${BACKEND_LATEST}
                         docker push ${BACKEND_IMAGE}
+                        docker push ${BACKEND_LATEST}
                     """
                 }
             }
         }
 
-        stage('Build Frontend Docker Image') {
+        stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
                     bat """
                         docker build --no-cache -t ${FRONTEND_IMAGE} .
+                        docker tag ${FRONTEND_IMAGE} ${FRONTEND_LATEST}
                         docker push ${FRONTEND_IMAGE}
+                        docker push ${FRONTEND_LATEST}
                     """
                 }
             }
@@ -56,13 +63,10 @@ pipeline {
 
         stage('Update Kubernetes Manifests') {
             steps {
-                script {
-                    // Replace image tags in deployment YAMLs
-                    bat """
-                        powershell -Command "(Get-Content k8s/backend-deployment.yaml) -replace 'image: azmeerasai/backend:.*', 'image: azmeerasai/backend:${IMAGE_VERSION}' | Set-Content k8s/backend-deployment.yaml"
-                        powershell -Command "(Get-Content k8s/frontend-deployment.yaml) -replace 'image: azmeerasai/frontend:.*', 'image: azmeerasai/frontend:${IMAGE_VERSION}' | Set-Content k8s/frontend-deployment.yaml"
-                    """
-                }
+                bat """
+                    powershell -Command "(Get-Content k8s/backend-deployment.yaml) -replace 'image:.*backend.*', 'image: azmeerasai/backend:${IMAGE_VERSION}' | Set-Content k8s/backend-deployment.yaml"
+                    powershell -Command "(Get-Content k8s/frontend-deployment.yaml) -replace 'image:.*frontend.*', 'image: azmeerasai/frontend:${IMAGE_VERSION}' | Set-Content k8s/frontend-deployment.yaml"
+                """
             }
         }
 

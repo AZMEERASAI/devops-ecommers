@@ -96,8 +96,8 @@ pipeline {
             }
         }
     }
-<<<<<<< HEAD
+
 }
-=======
+
 }
->>>>>>> e8be3ddfcdd9993b7c45e4c4fe9c0f77ccff7b74
+

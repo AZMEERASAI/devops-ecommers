@@ -76,13 +76,7 @@ function Login() {
                 <option value="admin">Admin</option>
               </select>
             </div>
-
-            {/* 🔴 Login button changed to red */}
-            <button
-              type="submit"
-              className="button button--primary button--large"
-              style={{ backgroundColor: 'red', color: 'white' }}
-            >
+            <button type="submit" className="button button--primary button--large">
               Login
             </button>
           </form>

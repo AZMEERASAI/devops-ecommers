@@ -36,8 +36,5 @@ spec:
   ports:
     - port: 5000          # service port (inside cluster)
       targetPort: 5000    # pod port
-<<<<<<< HEAD
       nodePort: 31034     # port exposed on your machine
-=======
-      nodePort: 31034     # port exposed on your machine
->>>>>>> e8be3ddfcdd9993b7c45e4c4fe9c0f77ccff7b74
+

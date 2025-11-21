@@ -18,6 +18,38 @@ pipeline {
             }
         }
 
+        /* --------------------- BACKEND TEST ----------------------- */
+        stage('Backend Test') {
+            steps {
+                dir('backend') {
+                    bat """
+                        echo Running backend tests...
+                        node -v
+                        npm -v
+
+                        npm ci
+                        npm test
+                    """
+                }
+            }
+        }
+
+        /* --------------------- FRONTEND TEST ----------------------- */
+        stage('Frontend Test') {
+            steps {
+                dir('frontend') {
+                    bat """
+                        echo Running frontend tests...
+                        node -v
+                        npm -v
+
+                        npm ci
+                        set CI=true && npm test
+                    """
+                }
+            }
+        }
+
         /* --------------------- INSTALL & BUILD BACKEND ----------------------- */
         stage('Build Backend App') {
             steps {
